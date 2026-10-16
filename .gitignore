@@ -1,0 +1,54 @@
+# ==========================================
+# Compilados de Maven y Java
+# ==========================================
+target/
+*.class
+bin/
+build/
+out/
+
+# ==========================================
+# Archivos de paquetes y registros (Logs)
+# ==========================================
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+*.log
+hs_err_pid*
+replay_pid*
+
+# ==========================================
+# Entornos de Desarrollo (Eclipse / IntelliJ / VS Code)
+# ==========================================
+.idea/
+*.iml
+.metadata/
+.recommenders/
+.settings/
+.externalToolBuilders/
+.loadpath
+.factorypath
+.classpath
+.project
+.vscode/
+*.tmp
+*.bak
+*.swp
+*~.nib
+
+# ==========================================
+# Sistema Operativo
+# ==========================================
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ==========================================
+# Archivos temporales de datos JSON
+# ==========================================
+src/main/java/data/*_temp.json
+src/main/java/data/*_backup.json
