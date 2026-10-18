@@ -1,7 +1,8 @@
 package Backend.exceptions;
 
-public class LaboratorioException extends RuntimeException {
-    public LaboratorioException(String message) {
-        super(message);
+public class LaboratorioException extends Exception {
+
+    public LaboratorioException(String mensaje) {
+        super(mensaje);
     }
 }
