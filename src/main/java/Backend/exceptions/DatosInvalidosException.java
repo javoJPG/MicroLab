@@ -1,7 +1,8 @@
 package Backend.exceptions;
 
-public class DatosInvalidosException extends RuntimeException {
-    public DatosInvalidosException(String message) {
-        super(message);
+public class DatosInvalidosException extends Exception {
+
+    public DatosInvalidosException(String mensaje) {
+        super(mensaje);
     }
 }
