@@ -1,6 +1,12 @@
 package Backend;
 
+/**
+ * Clase que almacena la fotografia de los resultados obtenidos
+ * al ejecutar un ciclo individual dentro de un experimento de simulacion.
+ */
 public class CicloSimulacion {
+
+    // Datos registrados al finalizar el ciclo
     private int numeroCiclo;
     private CondicionAmbiental condicionAplicada;
     private int cantidadOrganismos;
@@ -10,15 +16,27 @@ public class CicloSimulacion {
     private String estadoGeneral;
     private String descripcionRespuesta;
 
+    /**
+     * Constructor vacio requerido para la persistencia en JSON.
+     */
     public CicloSimulacion() {
     }
 
-    public CicloSimulacion(int numeroCiclo, CondicionAmbiental condicionAplicada,
-                           int cantidadOrganismos, double nivelActividad,
-                           double crecimiento, int reproduccion,
-                           String estadoGeneral, String descripcionRespuesta) {
+    /**
+     * Constructor completo para registrar el resultado de un ciclo de simulacion.
+     */
+    public CicloSimulacion(
+            int numeroCiclo,
+            CondicionAmbiental condicionAplicada,
+            int cantidadOrganismos,
+            double nivelActividad,
+            double crecimiento,
+            int reproduccion,
+            String estadoGeneral,
+            String descripcionRespuesta
+    ) {
         this.numeroCiclo = numeroCiclo;
-        this.condicionAplicada = condicionAplicada.copiar();
+        this.condicionAplicada = (condicionAplicada != null) ? condicionAplicada.copiar() : null;
         this.cantidadOrganismos = cantidadOrganismos;
         this.nivelActividad = nivelActividad;
         this.crecimiento = crecimiento;
@@ -27,33 +45,70 @@ public class CicloSimulacion {
         this.descripcionRespuesta = descripcionRespuesta;
     }
 
-    public int getNumeroCiclo() { return numeroCiclo; }
-    public void setNumeroCiclo(int numeroCiclo) { this.numeroCiclo = numeroCiclo; }
+    // ==================== GETTERS Y SETTERS ====================
 
-    public CondicionAmbiental getCondicionAplicada() { return condicionAplicada; }
+    public int getNumeroCiclo() {
+        return numeroCiclo;
+    }
+
+    public void setNumeroCiclo(int numeroCiclo) {
+        this.numeroCiclo = numeroCiclo;
+    }
+
+    public CondicionAmbiental getCondicionAplicada() {
+        return condicionAplicada;
+    }
+
     public void setCondicionAplicada(CondicionAmbiental condicionAplicada) {
         this.condicionAplicada = condicionAplicada;
     }
 
-    public int getCantidadOrganismos() { return cantidadOrganismos; }
+    public int getCantidadOrganismos() {
+        return cantidadOrganismos;
+    }
+
     public void setCantidadOrganismos(int cantidadOrganismos) {
         this.cantidadOrganismos = cantidadOrganismos;
     }
 
-    public double getNivelActividad() { return nivelActividad; }
-    public void setNivelActividad(double nivelActividad) { this.nivelActividad = nivelActividad; }
+    public double getNivelActividad() {
+        return nivelActividad;
+    }
 
-    public double getCrecimiento() { return crecimiento; }
-    public void setCrecimiento(double crecimiento) { this.crecimiento = crecimiento; }
+    public void setNivelActividad(double nivelActividad) {
+        this.nivelActividad = nivelActividad;
+    }
 
-    public int getReproduccion() { return reproduccion; }
-    public void setReproduccion(int reproduccion) { this.reproduccion = reproduccion; }
+    public double getCrecimiento() {
+        return crecimiento;
+    }
 
-    public String getEstadoGeneral() { return estadoGeneral; }
-    public void setEstadoGeneral(String estadoGeneral) { this.estadoGeneral = estadoGeneral; }
+    public void setCrecimiento(double crecimiento) {
+        this.crecimiento = crecimiento;
+    }
 
-    public String getDescripcionRespuesta() { return descripcionRespuesta; }
+    public int getReproduccion() {
+        return reproduccion;
+    }
+
+    public void setReproduccion(int reproduccion) {
+        this.reproduccion = reproduccion;
+    }
+
+    public String getEstadoGeneral() {
+        return estadoGeneral;
+    }
+
+    public void setEstadoGeneral(String estadoGeneral) {
+        this.estadoGeneral = estadoGeneral;
+    }
+
+    public String getDescripcionRespuesta() {
+        return descripcionRespuesta;
+    }
+
     public void setDescripcionRespuesta(String descripcionRespuesta) {
         this.descripcionRespuesta = descripcionRespuesta;
     }
+
 }
