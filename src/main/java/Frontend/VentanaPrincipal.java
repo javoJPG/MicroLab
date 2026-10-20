@@ -1,22 +1,91 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package Frontend;
 
+import Controller.ConsultaController;
+import Controller.ExperimentoController;
+import Controller.MuestraController;
+import javax.swing.JScrollPane;
+
 /**
+ * Ventana principal de la aplicacion MicroLab.
+ * Contiene el panel de pestañas (JTabbedPane) que integra los 5 modulos
+ * funcionales del sistema y coordina la actualizacion automatica entre ellos.
  *
  * @author javo
  */
 public class VentanaPrincipal extends javax.swing.JFrame {
-    
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(VentanaPrincipal.class.getName());
+
+    private static final java.util.logging.Logger logger =
+            java.util.logging.Logger.getLogger(VentanaPrincipal.class.getName());
+
+    // Controladores compartidos por todos los paneles de la interfaz
+    private final MuestraController muestraCtrl;
+    private final ExperimentoController experimentoCtrl;
+    private final ConsultaController consultaCtrl;
+
+    // Referencias a los paneles de cada modulo
+    private PanelMuestras panelMuestras;
+    private PanelMicroorganismos panelMicroorganismos;
+    private PanelObservaciones panelObservaciones;
+    private PanelExperimentoSimulacion panelExperimento;
+    private PanelConsultasHistorial panelConsultas;
 
     /**
-     * Creates new form VentanaPrincipal
+     * Constructor que inicializa los componentes visuales, los controladores
+     * y ensambla cada uno de los paneles dentro de las pestañas principales.
      */
     public VentanaPrincipal() {
         initComponents();
+
+        // Inicializar los controladores de negocio y persistencia
+        this.muestraCtrl = new MuestraController();
+        this.experimentoCtrl = new ExperimentoController(this.muestraCtrl);
+        this.consultaCtrl = new ConsultaController(this.muestraCtrl);
+
+        // Configurar e integrar las pestañas de la aplicacion
+        configurarPestanas();
+    }
+
+    /**
+     * Instancia cada panel funcional, los envuelve en un JScrollPane para
+     * facilitar el desplazamiento y sincroniza los datos al cambiar de pestaña.
+     */
+    private void configurarPestanas() {
+        panelMuestras = new PanelMuestras(muestraCtrl);
+        panelMicroorganismos = new PanelMicroorganismos(muestraCtrl);
+        panelObservaciones = new PanelObservaciones(muestraCtrl, experimentoCtrl);
+        panelExperimento = new PanelExperimentoSimulacion(muestraCtrl, experimentoCtrl);
+        panelConsultas = new PanelConsultasHistorial(muestraCtrl, consultaCtrl);
+
+        tabbedPanePrincipal.addTab("1. Muestras", crearScroll(panelMuestras));
+        tabbedPanePrincipal.addTab("2. Microorganismos", crearScroll(panelMicroorganismos));
+        tabbedPanePrincipal.addTab("3. Observaciones", crearScroll(panelObservaciones));
+        tabbedPanePrincipal.addTab("4. Experimentos y Simulación", crearScroll(panelExperimento));
+        tabbedPanePrincipal.addTab("5. Consultas e Historial", crearScroll(panelConsultas));
+
+        // Al cambiar de pestaña, refrescar automaticamente las listas y tablas del panel activo
+        tabbedPanePrincipal.addChangeListener(e -> {
+            int indice = tabbedPanePrincipal.getSelectedIndex();
+
+            switch (indice) {
+                case 0 -> panelMuestras.refrescarDatos();
+                case 1 -> panelMicroorganismos.refrescarDatos();
+                case 2 -> panelObservaciones.refrescarDatos();
+                case 3 -> panelExperimento.refrescarDatos();
+                case 4 -> panelConsultas.refrescarDatos();
+                default -> {
+                }
+            }
+        });
+    }
+
+    /**
+     * Envuelve un panel en un JScrollPane con velocidad de desplazamiento comoda.
+     */
+    private JScrollPane crearScroll(javax.swing.JPanel panel) {
+        JScrollPane scroll = new JScrollPane(panel);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        scroll.getHorizontalScrollBar().setUnitIncrement(16);
+        return scroll;
     }
 
     /**
@@ -39,21 +108,21 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(68, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(tabbedPanePrincipal)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(16, 16, 16)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(tabbedPanePrincipal, javax.swing.GroupLayout.DEFAULT_SIZE, 1120, Short.MAX_VALUE)
                     .addComponent(lblTituloApp, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(63, 63, 63))
+                .addGap(16, 16, 16))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(18, 18, 18)
+                .addGap(12, 12, 12)
                 .addComponent(lblTituloApp)
-                .addGap(32, 32, 32)
-                .addComponent(tabbedPanePrincipal, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(54, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(tabbedPanePrincipal, javax.swing.GroupLayout.DEFAULT_SIZE, 700, Short.MAX_VALUE)
+                .addGap(16, 16, 16))
         );
 
         pack();
@@ -63,23 +132,6 @@ public class VentanaPrincipal extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> new VentanaPrincipal().setVisible(true));
     }

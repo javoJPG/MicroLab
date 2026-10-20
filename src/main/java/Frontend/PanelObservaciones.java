@@ -1,20 +1,285 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
 package Frontend;
 
+import Backend.CondicionAmbiental;
+import Backend.Microorganismo;
+import Backend.Muestra;
+import Backend.Observacion;
+import Backend.exceptions.DatosInvalidosException;
+import Backend.exceptions.LaboratorioException;
+import Controller.ExperimentoController;
+import Controller.MuestraController;
+import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
+ * Panel destinado al registro y consulta de observaciones cientificas realizadas
+ * sobre los microorganismos de una muestra bajo condiciones ambientales especificas.
  *
  * @author javo
  */
 public class PanelObservaciones extends javax.swing.JPanel {
 
+    // Controladores de negocio compartidos
+    private MuestraController muestraCtrl;
+    private ExperimentoController experimentoCtrl;
+
+    // Modelo de datos para la tabla de observaciones
+    private DefaultTableModel modeloTabla;
+
     /**
-     * Creates new form PanelObservaciones
+     * Constructor por defecto requerido por el diseñador de NetBeans.
      */
     public PanelObservaciones() {
+        this(null, null);
+    }
+
+    /**
+     * Constructor que conecta el panel con los controladores de muestras y experimentos.
+     *
+     * @param muestraCtrl     Instancia de MuestraController.
+     * @param experimentoCtrl Instancia de ExperimentoController.
+     */
+    public PanelObservaciones(MuestraController muestraCtrl, ExperimentoController experimentoCtrl) {
+        this.muestraCtrl = muestraCtrl;
+        this.experimentoCtrl = experimentoCtrl;
         initComponents();
+        configurarTablaYEventos();
+        refrescarDatos();
+    }
+
+    // ==================== CONFIGURACION Y EVENTOS ====================
+
+    /**
+     * Configura las columnas de la tabla de observaciones y enlaza los botones y listas.
+     */
+    private void configurarTablaYEventos() {
+        modeloTabla = new DefaultTableModel(
+                new Object[]{
+                    "ID Obs.", "Fecha", "Muestra", "Microorganismo",
+                    "Condición de Análisis", "Descripción / Resultados"
+                },
+                0
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tblObservaciones.setModel(modeloTabla);
+
+        // Al cambiar la muestra seleccionada, actualizar los microorganismos disponibles
+        cmbMuestraObs.addActionListener(e -> actualizarComboMicroorganismos());
+
+        // Acciones de los botones
+        btnRegistrarObs.addActionListener(e -> registrarObservacion());
+        btnFiltrarObsPorMicro.addActionListener(e -> filtrarObservacionesPorSeleccion());
+        btnMostrarTodasObs.addActionListener(e -> mostrarTodasLasObservaciones());
+    }
+
+    /**
+     * Recarga los selectores de muestras y microorganismos y actualiza la tabla de observaciones.
+     */
+    public final void refrescarDatos() {
+        if (muestraCtrl == null || modeloTabla == null) {
+            return;
+        }
+
+        String seleccionPrevia = (String) cmbMuestraObs.getSelectedItem();
+        cmbMuestraObs.removeAllItems();
+
+        for (Muestra m : muestraCtrl.getMuestras()) {
+            cmbMuestraObs.addItem(m.getId() + " - " + m.getOrigen());
+        }
+
+        if (seleccionPrevia != null) {
+            cmbMuestraObs.setSelectedItem(seleccionPrevia);
+        }
+
+        actualizarComboMicroorganismos();
+        mostrarTodasLasObservaciones();
+    }
+
+    /**
+     * Actualiza el selector de microorganismos segun la muestra seleccionada actualmente.
+     */
+    private void actualizarComboMicroorganismos() {
+        if (muestraCtrl == null) {
+            return;
+        }
+
+        cmbMicroorganismoObs.removeAllItems();
+        String idMuestra = obtenerIdSeleccionado(cmbMuestraObs);
+        Muestra muestra = muestraCtrl.buscarMuestraPorId(idMuestra);
+
+        if (muestra != null) {
+            for (Microorganismo micro : muestra.getMicroorganismos()) {
+                cmbMicroorganismoObs.addItem(
+                        micro.getId() + " - " + micro.getNombre() + " (" + micro.getTipo() + ")"
+                );
+            }
+
+            // Prellenar condiciones ambientales de la muestra si los campos estan vacios
+            if (muestra.getCondicionInicial() != null && txtTempObs.getText().trim().isEmpty()) {
+                CondicionAmbiental c = muestra.getCondicionInicial();
+                txtTempObs.setText(String.valueOf(c.getTemperatura()));
+                txtPhObs.setText(String.valueOf(c.getPh()));
+                txtOxigenoObs.setText(String.valueOf(c.getOxigeno()));
+                txtHumedadObs.setText(String.valueOf(c.getHumedad()));
+                txtSalinidadObs.setText(String.valueOf(c.getSalinidad()));
+                txtNutrientesObs.setText(String.valueOf(c.getDisponibilidadNutrientes()));
+            }
+        }
+    }
+
+    // ==================== LOGICA DE NEGOCIO ====================
+
+    /**
+     * Registra una nueva observacion validando los datos ingresados en el formulario.
+     */
+    private void registrarObservacion() {
+        if (experimentoCtrl == null || muestraCtrl == null) {
+            return;
+        }
+
+        try {
+            String idMuestra = obtenerIdSeleccionado(cmbMuestraObs);
+            String idMicro = obtenerIdSeleccionado(cmbMicroorganismoObs);
+
+            if (idMuestra.isEmpty()) {
+                throw new LaboratorioException("Debe seleccionar una muestra estudiada.");
+            }
+            if (idMicro.isEmpty()) {
+                throw new LaboratorioException("Debe seleccionar un microorganismo dentro de la muestra.");
+            }
+
+            String idObs = txtIdObs.getText().trim();
+            String fecha = txtFechaObs.getText().trim();
+            String descripcion = txtDescripcionObs.getText().trim();
+            CondicionAmbiental condicion = leerCondicionAnalisis();
+
+            Observacion nuevaObs = new Observacion(
+                    idObs, idMuestra, idMicro, fecha, condicion, descripcion
+            );
+
+            experimentoCtrl.registrarObservacion(nuevaObs);
+            mostrarTodasLasObservaciones();
+            limpiarCampos();
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Observación registrada correctamente.",
+                    "Registro exitoso",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+        } catch (DatosInvalidosException | LaboratorioException ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    ex.getMessage(),
+                    "Error al registrar observación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+        }
+    }
+
+    /**
+     * Filtra la tabla de observaciones segun la muestra y el microorganismo seleccionados.
+     */
+    private void filtrarObservacionesPorSeleccion() {
+        if (experimentoCtrl == null) {
+            return;
+        }
+
+        String idMuestra = obtenerIdSeleccionado(cmbMuestraObs);
+        String idMicro = obtenerIdSeleccionado(cmbMicroorganismoObs);
+
+        List<Observacion> filtradas = experimentoCtrl.obtenerObservacionesPorMicroorganismo(
+                idMuestra, idMicro
+        );
+        cargarTablaObservaciones(filtradas);
+    }
+
+    /**
+     * Muestra todas las observaciones registradas en el laboratorio.
+     */
+    private void mostrarTodasLasObservaciones() {
+        if (muestraCtrl == null) {
+            return;
+        }
+        cargarTablaObservaciones(muestraCtrl.getObservaciones());
+    }
+
+    /**
+     * Llena la tabla con la lista de observaciones proporcionada.
+     */
+    private void cargarTablaObservaciones(List<Observacion> lista) {
+        if (modeloTabla == null) {
+            return;
+        }
+
+        modeloTabla.setRowCount(0);
+        if (lista == null) {
+            return;
+        }
+
+        for (Observacion obs : lista) {
+            String condTexto = (obs.getCondicionAnalisis() != null)
+                    ? obs.getCondicionAnalisis().toString()
+                    : "-";
+
+            modeloTabla.addRow(new Object[]{
+                obs.getId(),
+                obs.getFecha(),
+                obs.getIdMuestra(),
+                obs.getIdMicroorganismo(),
+                condTexto,
+                obs.getDescripcionResultados()
+            });
+        }
+    }
+
+    /**
+     * Lee y convierte los campos numericos de las condiciones durante el analisis.
+     */
+    private CondicionAmbiental leerCondicionAnalisis() throws DatosInvalidosException {
+        try {
+            double temp = Double.parseDouble(txtTempObs.getText().trim());
+            double ph = Double.parseDouble(txtPhObs.getText().trim());
+            double oxigeno = Double.parseDouble(txtOxigenoObs.getText().trim());
+            double humedad = Double.parseDouble(txtHumedadObs.getText().trim());
+            double salinidad = Double.parseDouble(txtSalinidadObs.getText().trim());
+            double nutrientes = Double.parseDouble(txtNutrientesObs.getText().trim());
+
+            return new CondicionAmbiental(temp, ph, oxigeno, humedad, salinidad, nutrientes);
+
+        } catch (NumberFormatException ex) {
+            throw new DatosInvalidosException(
+                    "Todos los parámetros ambientales del análisis deben ser valores numéricos."
+            );
+        }
+    }
+
+    /**
+     * Extrae el identificador antes del guion ("ID - Descripcion") de un JComboBox.
+     */
+    private String obtenerIdSeleccionado(javax.swing.JComboBox<String> combo) {
+        Object item = combo.getSelectedItem();
+        if (item == null) {
+            return "";
+        }
+        String texto = item.toString().trim();
+        int idx = texto.indexOf(" - ");
+        return (idx > 0) ? texto.substring(0, idx).trim() : texto;
+    }
+
+    /**
+     * Limpia los campos de entrada de la observacion tras un registro exitoso.
+     */
+    private void limpiarCampos() {
+        txtIdObs.setText("");
+        txtFechaObs.setText("");
+        txtDescripcionObs.setText("");
     }
 
     /**
@@ -231,7 +496,7 @@ public class PanelObservaciones extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnActualizarCombosObsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarCombosObsActionPerformed
-        // TODO add your handling code here:
+        refrescarDatos();
     }//GEN-LAST:event_btnActualizarCombosObsActionPerformed
 
 

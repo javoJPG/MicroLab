@@ -1,20 +1,339 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
 package Frontend;
 
+import Backend.Bacteria;
+import Backend.CondicionAmbiental;
+import Backend.Extremofilo;
+import Backend.HongoMicroscopico;
+import Backend.Microorganismo;
+import Backend.Muestra;
+import Backend.Protozoo;
+import Backend.exceptions.DatosInvalidosException;
+import Backend.exceptions.LaboratorioException;
+import Controller.MuestraController;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
+ * Panel encargado del registro polimorfico y visualizacion de los microorganismos
+ * (Bacteria, Protozoo, Hongo Microscopico y Extremofilo) asociados a cada muestra.
  *
  * @author javo
  */
 public class PanelMicroorganismos extends javax.swing.JPanel {
 
+    // Controlador principal de muestras y microorganismos
+    private MuestraController muestraCtrl;
+
+    // Modelo de datos para la tabla de microorganismos
+    private DefaultTableModel modeloTabla;
+
     /**
-     * Creates new form PanelMicroorganismos
+     * Constructor por defecto requerido por el diseñador de NetBeans.
      */
     public PanelMicroorganismos() {
+        this(null);
+    }
+
+    /**
+     * Constructor que conecta el panel con el controlador de muestras.
+     *
+     * @param muestraCtrl Instancia compartida de MuestraController.
+     */
+    public PanelMicroorganismos(MuestraController muestraCtrl) {
+        this.muestraCtrl = muestraCtrl;
         initComponents();
+        configurarTablaYEventos();
+        refrescarDatos();
+    }
+
+    // ==================== CONFIGURACION Y EVENTOS ====================
+
+    /**
+     * Configura las columnas de la tabla y enlaza los eventos de botones y selectores.
+     */
+    private void configurarTablaYEventos() {
+        modeloTabla = new DefaultTableModel(
+                new Object[]{
+                    "ID", "Muestra", "Nombre", "Tipo", "Estado",
+                    "Población", "Actividad (%)", "Reproducción", "Alimentación", "Locomoción"
+                },
+                0
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tblMicroorganismos.setModel(modeloTabla);
+
+        // Eventos de botones y selectores
+        btnRefrescarMuestrasMicro.addActionListener(e -> refrescarDatos());
+        btnRegistrarMicro.addActionListener(e -> registrarMicroorganismo());
+        cmbTipoMicro.addActionListener(e -> actualizarEtiquetaParametroEspecial());
+        cmbMuestraAsociada.addActionListener(e -> prellenarCondicionesDesdeMuestra());
+
+        actualizarEtiquetaParametroEspecial();
+    }
+
+    /**
+     * Actualiza la etiqueta descriptiva del parametro especifico segun la subclase seleccionada.
+     */
+    private void actualizarEtiquetaParametroEspecial() {
+        String tipo = (String) cmbTipoMicro.getSelectedItem();
+        if (tipo == null) {
+            return;
+        }
+
+        if (Microorganismo.TIPO_BACTERIA.equalsIgnoreCase(tipo)) {
+            lblParametroEspecial.setText("Tasa de Fisión Binaria (ej. 1.2):");
+        } else if (Microorganismo.TIPO_PROTOZOO.equalsIgnoreCase(tipo)) {
+            lblParametroEspecial.setText("Sensibilidad O2 / Humedad (ej. 1.0):");
+        } else if (Microorganismo.TIPO_HONGO.equalsIgnoreCase(tipo)) {
+            lblParametroEspecial.setText("Factor de Esporulación (entero, ej. 3):");
+        } else if (Microorganismo.TIPO_EXTREMOFILO.equalsIgnoreCase(tipo)) {
+            lblParametroEspecial.setText("Índice Resistencia Extrema (ej. 1.5):");
+        }
+    }
+
+    /**
+     * Si el usuario selecciona una muestra y los campos de condicion ambiental estan vacios,
+     * prellena dichos campos con la condicion inicial de la muestra para agilizar el registro.
+     */
+    private void prellenarCondicionesDesdeMuestra() {
+        if (muestraCtrl == null) {
+            return;
+        }
+
+        String idMuestra = obtenerIdSeleccionado(cmbMuestraAsociada);
+        Muestra m = muestraCtrl.buscarMuestraPorId(idMuestra);
+
+        if (m != null && m.getCondicionInicial() != null && txtTempMicro.getText().trim().isEmpty()) {
+            CondicionAmbiental c = m.getCondicionInicial();
+            txtTempMicro.setText(String.valueOf(c.getTemperatura()));
+            txtPhMicro.setText(String.valueOf(c.getPh()));
+            txtOxigenoMicro.setText(String.valueOf(c.getOxigeno()));
+            txtHumedadMicro.setText(String.valueOf(c.getHumedad()));
+            txtSalinidadMicro.setText(String.valueOf(c.getSalinidad()));
+            txtNutrientesMicro.setText(String.valueOf(c.getDisponibilidadNutrientes()));
+        }
+    }
+
+    /**
+     * Recarga el selector de muestras y la tabla de microorganismos registrados.
+     */
+    public final void refrescarDatos() {
+        if (muestraCtrl == null || modeloTabla == null) {
+            return;
+        }
+
+        String seleccionPrevia = (String) cmbMuestraAsociada.getSelectedItem();
+        cmbMuestraAsociada.removeAllItems();
+
+        for (Muestra m : muestraCtrl.getMuestras()) {
+            cmbMuestraAsociada.addItem(m.getId() + " - " + m.getOrigen());
+        }
+
+        if (seleccionPrevia != null) {
+            cmbMuestraAsociada.setSelectedItem(seleccionPrevia);
+        }
+
+        // Actualizar filas de la tabla con todos los microorganismos
+        modeloTabla.setRowCount(0);
+        for (Microorganismo micro : muestraCtrl.obtenerTodosLosMicroorganismos()) {
+            modeloTabla.addRow(new Object[]{
+                micro.getId(),
+                micro.getIdMuestra(),
+                micro.getNombre(),
+                micro.getTipo(),
+                micro.getEstado(),
+                micro.getCantidadOrganismos(),
+                String.format("%.1f%%", micro.getNivelActividad()),
+                micro.getCapacidadReproductiva(),
+                micro.getAlimentacion(),
+                micro.getLocomocion()
+            });
+        }
+    }
+
+    // ==================== LOGICA DE REGISTRO ====================
+
+    /**
+     * Crea la instancia polimorfica del microorganismo segun su tipo y la asocia a la muestra.
+     */
+    private void registrarMicroorganismo() {
+        if (muestraCtrl == null) {
+            return;
+        }
+
+        try {
+            String idMuestra = obtenerIdSeleccionado(cmbMuestraAsociada);
+            if (idMuestra.isEmpty()) {
+                throw new LaboratorioException(
+                        "Debe registrar y seleccionar una muestra antes de agregar un microorganismo."
+                );
+            }
+
+            String id = txtIdMicro.getText().trim();
+            String nombre = txtNombreMicro.getText().trim();
+            String tipo = (String) cmbTipoMicro.getSelectedItem();
+            String estado = (String) cmbEstadoMicro.getSelectedItem();
+            String reproduccion = txtReproduccionMicro.getText().trim();
+            String alimentacion = txtAlimentacionMicro.getText().trim();
+            String locomocion = txtLocomocionMicro.getText().trim();
+
+            int cantidadInicial;
+            try {
+                cantidadInicial = Integer.parseInt(txtPoblacionInicialMicro.getText().trim());
+            } catch (NumberFormatException ex) {
+                throw new DatosInvalidosException(
+                        "La cantidad inicial de organismos debe ser un numero entero valido."
+                );
+            }
+
+            CondicionAmbiental condicion = leerCondicionCrecimiento();
+            Microorganismo nuevoMicro = construirSegunTipo(
+                    id, idMuestra, nombre, tipo, estado, condicion,
+                    reproduccion, alimentacion, locomocion, cantidadInicial
+            );
+
+            muestraCtrl.registrarMicroorganismoEnMuestra(idMuestra, nuevoMicro);
+            refrescarDatos();
+            limpiarCampos();
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Microorganismo registrado exitosamente en la muestra " + idMuestra + ".",
+                    "Registro exitoso",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+        } catch (DatosInvalidosException | LaboratorioException ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    ex.getMessage(),
+                    "Error al registrar microorganismo",
+                    JOptionPane.WARNING_MESSAGE
+            );
+        }
+    }
+
+    /**
+     * Instancia la subclase correspondiente de Microorganismo validando su parametro especial.
+     */
+    private Microorganismo construirSegunTipo(
+            String id,
+            String idMuestra,
+            String nombre,
+            String tipo,
+            String estado,
+            CondicionAmbiental condicion,
+            String reproduccion,
+            String alimentacion,
+            String locomocion,
+            int cantidadInicial
+    ) throws DatosInvalidosException {
+
+        String textoParam = txtParametroEspecialMicro.getText().trim();
+
+        try {
+            if (Microorganismo.TIPO_BACTERIA.equalsIgnoreCase(tipo)) {
+                double tasa = Double.parseDouble(textoParam);
+                if (tasa <= 0) {
+                    throw new DatosInvalidosException("La tasa de fision binaria debe ser mayor a cero.");
+                }
+                return new Bacteria(
+                        id, idMuestra, nombre, estado, condicion,
+                        reproduccion, alimentacion, locomocion, cantidadInicial, tasa
+                );
+
+            } else if (Microorganismo.TIPO_PROTOZOO.equalsIgnoreCase(tipo)) {
+                double sensibilidad = Double.parseDouble(textoParam);
+                if (sensibilidad <= 0) {
+                    throw new DatosInvalidosException("La sensibilidad debe ser mayor a cero.");
+                }
+                return new Protozoo(
+                        id, idMuestra, nombre, estado, condicion,
+                        reproduccion, alimentacion, locomocion, cantidadInicial, sensibilidad
+                );
+
+            } else if (Microorganismo.TIPO_HONGO.equalsIgnoreCase(tipo)) {
+                int factorEsporulacion = Integer.parseInt(textoParam);
+                if (factorEsporulacion <= 0) {
+                    throw new DatosInvalidosException("El factor de esporulacion debe ser un entero mayor a cero.");
+                }
+                return new HongoMicroscopico(
+                        id, idMuestra, nombre, estado, condicion,
+                        reproduccion, alimentacion, locomocion, cantidadInicial, factorEsporulacion
+                );
+
+            } else {
+                double indiceResistencia = Double.parseDouble(textoParam);
+                if (indiceResistencia <= 0) {
+                    throw new DatosInvalidosException("El indice de resistencia extrema debe ser mayor a cero.");
+                }
+                return new Extremofilo(
+                        id, idMuestra, nombre, estado, condicion,
+                        reproduccion, alimentacion, locomocion, cantidadInicial, indiceResistencia
+                );
+            }
+        } catch (NumberFormatException ex) {
+            throw new DatosInvalidosException(
+                    "El valor numerico de la caracteristica propia del grupo no tiene un formato valido."
+            );
+        }
+    }
+
+    /**
+     * Lee y valida el formato numerico de las condiciones de crecimiento del microorganismo.
+     */
+    private CondicionAmbiental leerCondicionCrecimiento() throws DatosInvalidosException {
+        try {
+            double temp = Double.parseDouble(txtTempMicro.getText().trim());
+            double ph = Double.parseDouble(txtPhMicro.getText().trim());
+            double oxigeno = Double.parseDouble(txtOxigenoMicro.getText().trim());
+            double humedad = Double.parseDouble(txtHumedadMicro.getText().trim());
+            double salinidad = Double.parseDouble(txtSalinidadMicro.getText().trim());
+            double nutrientes = Double.parseDouble(txtNutrientesMicro.getText().trim());
+
+            return new CondicionAmbiental(temp, ph, oxigeno, humedad, salinidad, nutrientes);
+
+        } catch (NumberFormatException ex) {
+            throw new DatosInvalidosException(
+                    "Todas las condiciones ambientales de crecimiento deben ser valores numericos."
+            );
+        }
+    }
+
+    /**
+     * Extrae el ID antes del guion ("ID - Descripcion") de un JComboBox.
+     */
+    private String obtenerIdSeleccionado(javax.swing.JComboBox<String> combo) {
+        Object item = combo.getSelectedItem();
+        if (item == null) {
+            return "";
+        }
+        String texto = item.toString().trim();
+        int idx = texto.indexOf(" - ");
+        return (idx > 0) ? texto.substring(0, idx).trim() : texto;
+    }
+
+    /**
+     * Limpia todos los campos de texto del formulario.
+     */
+    private void limpiarCampos() {
+        txtIdMicro.setText("");
+        txtNombreMicro.setText("");
+        txtPoblacionInicialMicro.setText("");
+        txtReproduccionMicro.setText("");
+        txtAlimentacionMicro.setText("");
+        txtLocomocionMicro.setText("");
+        txtParametroEspecialMicro.setText("");
+        txtTempMicro.setText("");
+        txtPhMicro.setText("");
+        txtOxigenoMicro.setText("");
+        txtHumedadMicro.setText("");
+        txtSalinidadMicro.setText("");
+        txtNutrientesMicro.setText("");
     }
 
     /**
@@ -266,7 +585,7 @@ public class PanelMicroorganismos extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnLimpiarMicroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarMicroActionPerformed
-        // TODO add your handling code here:
+        limpiarCampos();
     }//GEN-LAST:event_btnLimpiarMicroActionPerformed
 
 

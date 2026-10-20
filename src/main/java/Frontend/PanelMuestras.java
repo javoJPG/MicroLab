@@ -1,20 +1,285 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
 package Frontend;
 
+import Backend.CondicionAmbiental;
+import Backend.Microorganismo;
+import Backend.Muestra;
+import Backend.exceptions.DatosInvalidosException;
+import Backend.exceptions.LaboratorioException;
+import Controller.MuestraController;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
+ * Panel encargado del registro, actualizacion, listado y visualizacion
+ * detallada de las muestras recolectadas en el laboratorio.
  *
  * @author javo
  */
 public class PanelMuestras extends javax.swing.JPanel {
 
+    // Controlador principal de muestras
+    private MuestraController muestraCtrl;
+
+    // Modelo de datos para la tabla de muestras
+    private DefaultTableModel modeloTabla;
+
     /**
-     * Creates new form PanelMuestras
+     * Constructor por defecto requerido por el diseñador de NetBeans.
      */
     public PanelMuestras() {
+        this(null);
+    }
+
+    /**
+     * Constructor que conecta el panel con el controlador de muestras.
+     *
+     * @param muestraCtrl Instancia compartida de MuestraController.
+     */
+    public PanelMuestras(MuestraController muestraCtrl) {
+        this.muestraCtrl = muestraCtrl;
         initComponents();
+        configurarTablaYEventos();
+        refrescarDatos();
+    }
+
+    // ==================== CONFIGURACION Y EVENTOS ====================
+
+    /**
+     * Configura las columnas de la tabla de muestras y enlaza los eventos
+     * de los botones y de la seleccion en la tabla.
+     */
+    private void configurarTablaYEventos() {
+        modeloTabla = new DefaultTableModel(
+                new Object[]{"ID", "Origen", "Fecha", "Responsable", "Temp (°C)", "pH", "Micros"}, 0
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tblMuestras.setModel(modeloTabla);
+
+        // Eventos de botones
+        btnRegistrarMuestra.addActionListener(e -> registrarMuestra());
+        btnActualizarMuestra.addActionListener(e -> actualizarMuestra());
+
+        // Evento al seleccionar una fila de la tabla para cargar sus datos en el formulario
+        tblMuestras.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                cargarMuestraSeleccionada();
+            }
+        });
+    }
+
+    /**
+     * Recarga la tabla con todas las muestras almacenadas en el controlador.
+     */
+    public final void refrescarDatos() {
+        if (muestraCtrl == null || modeloTabla == null) {
+            return;
+        }
+
+        modeloTabla.setRowCount(0);
+
+        for (Muestra m : muestraCtrl.getMuestras()) {
+            CondicionAmbiental c = m.getCondicionInicial();
+            double temp = (c != null) ? c.getTemperatura() : 0.0;
+            double ph = (c != null) ? c.getPh() : 0.0;
+
+            modeloTabla.addRow(new Object[]{
+                m.getId(),
+                m.getOrigen(),
+                m.getFechaRecoleccion(),
+                m.getResponsableAnalisis(),
+                String.format("%.1f", temp),
+                String.format("%.1f", ph),
+                m.getMicroorganismos().size()
+            });
+        }
+    }
+
+    // ==================== LOGICA DE NEGOCIO DEL PANEL ====================
+
+    /**
+     * Registra una nueva muestra leyendo y validando los datos ingresados.
+     */
+    private void registrarMuestra() {
+        if (muestraCtrl == null) {
+            return;
+        }
+
+        try {
+            CondicionAmbiental condicion = leerCondicionAmbientalFormulario();
+
+            Muestra nueva = new Muestra(
+                    txtIdMuestra.getText().trim(),
+                    txtOrigenMuestra.getText().trim(),
+                    txtFechaMuestra.getText().trim(),
+                    txtResponsableMuestra.getText().trim(),
+                    condicion,
+                    txtObservacionesMuestra.getText().trim()
+            );
+
+            muestraCtrl.registrarMuestra(nueva);
+            refrescarDatos();
+            limpiarCampos();
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Muestra registrada correctamente.",
+                    "Registro exitoso",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+        } catch (DatosInvalidosException | LaboratorioException ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    ex.getMessage(),
+                    "Error de validacion",
+                    JOptionPane.WARNING_MESSAGE
+            );
+        }
+    }
+
+    /**
+     * Actualiza los datos de una muestra existente seleccionada por su ID.
+     */
+    private void actualizarMuestra() {
+        if (muestraCtrl == null) {
+            return;
+        }
+
+        try {
+            String id = txtIdMuestra.getText().trim();
+            CondicionAmbiental nuevaCondicion = leerCondicionAmbientalFormulario();
+
+            muestraCtrl.actualizarMuestra(
+                    id,
+                    txtOrigenMuestra.getText().trim(),
+                    txtFechaMuestra.getText().trim(),
+                    txtResponsableMuestra.getText().trim(),
+                    nuevaCondicion,
+                    txtObservacionesMuestra.getText().trim()
+            );
+
+            refrescarDatos();
+            mostrarDetalleMuestra(muestraCtrl.buscarMuestraPorId(id));
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Muestra actualizada correctamente.",
+                    "Actualizacion exitosa",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+        } catch (DatosInvalidosException | LaboratorioException ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    ex.getMessage(),
+                    "Error al actualizar",
+                    JOptionPane.WARNING_MESSAGE
+            );
+        }
+    }
+
+    /**
+     * Carga en los campos de texto y en el area de detalle la muestra seleccionada en la tabla.
+     */
+    private void cargarMuestraSeleccionada() {
+        int fila = tblMuestras.getSelectedRow();
+        if (fila < 0 || muestraCtrl == null) {
+            return;
+        }
+
+        String idMuestra = String.valueOf(modeloTabla.getValueAt(fila, 0));
+        Muestra m = muestraCtrl.buscarMuestraPorId(idMuestra);
+        if (m == null) {
+            return;
+        }
+
+        txtIdMuestra.setText(m.getId());
+        txtOrigenMuestra.setText(m.getOrigen());
+        txtFechaMuestra.setText(m.getFechaRecoleccion());
+        txtResponsableMuestra.setText(m.getResponsableAnalisis());
+        txtObservacionesMuestra.setText(m.getObservacionesGenerales());
+
+        CondicionAmbiental c = m.getCondicionInicial();
+        if (c != null) {
+            txtTempMuestra.setText(String.valueOf(c.getTemperatura()));
+            txtPhMuestra.setText(String.valueOf(c.getPh()));
+            txtOxigenoMuestra.setText(String.valueOf(c.getOxigeno()));
+            txtHumedadMuestra.setText(String.valueOf(c.getHumedad()));
+            txtSalinidadMuestra.setText(String.valueOf(c.getSalinidad()));
+            txtNutrientesMuestra.setText(String.valueOf(c.getDisponibilidadNutrientes()));
+        }
+
+        mostrarDetalleMuestra(m);
+    }
+
+    /**
+     * Muestra en el area de texto lateral toda la informacion detallada de una muestra.
+     */
+    private void mostrarDetalleMuestra(Muestra m) {
+        if (m == null) {
+            txtDetalleMuestra.setText("");
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== DETALLE DE MUESTRA ").append(m.getId()).append(" ===\n");
+        sb.append("Origen: ").append(m.getOrigen()).append("\n");
+        sb.append("Fecha: ").append(m.getFechaRecoleccion()).append("\n");
+        sb.append("Responsable: ").append(m.getResponsableAnalisis()).append("\n");
+        sb.append("Condicion Inicial:\n  ").append(m.getCondicionInicial()).append("\n");
+        sb.append("Observaciones: ").append(m.getObservacionesGenerales()).append("\n\n");
+
+        sb.append("Microorganismos asociados (").append(m.getMicroorganismos().size()).append("):\n");
+        for (Microorganismo micro : m.getMicroorganismos()) {
+            sb.append(" - [").append(micro.getId()).append("] ")
+              .append(micro.getNombre()).append(" (").append(micro.getTipo()).append(")\n");
+        }
+
+        txtDetalleMuestra.setText(sb.toString());
+    }
+
+    /**
+     * Lee y convierte los valores numericos de las condiciones ambientales del formulario.
+     */
+    private CondicionAmbiental leerCondicionAmbientalFormulario() throws DatosInvalidosException {
+        try {
+            double temp = Double.parseDouble(txtTempMuestra.getText().trim());
+            double ph = Double.parseDouble(txtPhMuestra.getText().trim());
+            double oxigeno = Double.parseDouble(txtOxigenoMuestra.getText().trim());
+            double humedad = Double.parseDouble(txtHumedadMuestra.getText().trim());
+            double salinidad = Double.parseDouble(txtSalinidadMuestra.getText().trim());
+            double nutrientes = Double.parseDouble(txtNutrientesMuestra.getText().trim());
+
+            return new CondicionAmbiental(temp, ph, oxigeno, humedad, salinidad, nutrientes);
+
+        } catch (NumberFormatException ex) {
+            throw new DatosInvalidosException(
+                    "Todos los campos de condiciones ambientales (temperatura, pH, oxigeno, humedad, salinidad y nutrientes) deben ser valores numericos validos."
+            );
+        }
+    }
+
+    /**
+     * Limpia todos los campos del formulario de muestras.
+     */
+    private void limpiarCampos() {
+        txtIdMuestra.setText("");
+        txtOrigenMuestra.setText("");
+        txtFechaMuestra.setText("");
+        txtResponsableMuestra.setText("");
+        txtTempMuestra.setText("");
+        txtPhMuestra.setText("");
+        txtOxigenoMuestra.setText("");
+        txtHumedadMuestra.setText("");
+        txtSalinidadMuestra.setText("");
+        txtNutrientesMuestra.setText("");
+        txtObservacionesMuestra.setText("");
+        txtDetalleMuestra.setText("");
+        tblMuestras.clearSelection();
     }
 
     /**
@@ -167,8 +432,8 @@ public class PanelMuestras extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel6))
+                .addComponent(jLabel1)
+                .addComponent(jLabel6))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtIdMuestra, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -227,19 +492,16 @@ public class PanelMuestras extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void txtIdMuestraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtIdMuestraActionPerformed
-        // TODO add your handling code here:
     }//GEN-LAST:event_txtIdMuestraActionPerformed
 
     private void txtTempMuestraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTempMuestraActionPerformed
-        // TODO add your handling code here:
     }//GEN-LAST:event_txtTempMuestraActionPerformed
 
     private void txtOxigenoMuestraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtOxigenoMuestraActionPerformed
-        // TODO add your handling code here:
     }//GEN-LAST:event_txtOxigenoMuestraActionPerformed
 
     private void btnLimpiarMuestraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarMuestraActionPerformed
-        // TODO add your handling code here:
+        limpiarCampos();
     }//GEN-LAST:event_btnLimpiarMuestraActionPerformed
 
 
