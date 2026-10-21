@@ -142,6 +142,25 @@
         "Experimento EXP-002 iniciado sobre Thermus aquaticus",
         "Exp EXP-002 - Ciclo 1: En desarrollo optimo"
       ]
+    },
+    {
+      "id": "hola",
+      "origen": "lago",
+      "fechaRecoleccion": "12 de septiembre",
+      "responsableAnalisis": "johan",
+      "condicionInicial": {
+        "temperatura": 10.0,
+        "ph": 8.0,
+        "oxigeno": 8.0,
+        "humedad": 8.0,
+        "salinidad": 8.0,
+        "disponibilidadNutrientes": 8.0
+      },
+      "observacionesGenerales": "",
+      "microorganismos": [],
+      "historialAnalisis": [
+        "Muestra registrada el 12 de septiembre por johan"
+      ]
     }
   ],
   "observaciones": [
@@ -298,6 +317,7 @@
     "[SIMULACION] Exp EXP-001 Ciclo 1 -\u003e Pob: 815",
     "[SIMULACION] Exp EXP-001 Ciclo 2 -\u003e Pob: 937",
     "[EXPERIMENTO] Iniciado ID: EXP-002 sobre Thermus aquaticus",
-    "[SIMULACION] Exp EXP-002 Ciclo 1 -\u003e Pob: 978"
+    "[SIMULACION] Exp EXP-002 Ciclo 1 -\u003e Pob: 978",
+    "[MUESTRA] Registrada ID: hola (lago)"
   ]
 }
