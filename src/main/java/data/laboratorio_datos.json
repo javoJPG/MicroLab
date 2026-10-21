@@ -1,0 +1,303 @@
+{
+  "muestras": [
+    {
+      "id": "M-001",
+      "origen": "Suelo Húmedo Amazónico",
+      "fechaRecoleccion": "2026-10-20",
+      "responsableAnalisis": "Dra. Elena Gómez",
+      "condicionInicial": {
+        "temperatura": 28.0,
+        "ph": 6.8,
+        "oxigeno": 75.0,
+        "humedad": 80.0,
+        "salinidad": 1.5,
+        "disponibilidadNutrientes": 85.0
+      },
+      "observacionesGenerales": "Muestra rica en materia orgánica recolectada a 15 cm de profundidad.",
+      "microorganismos": [
+        {
+          "tasaFisionBinaria": 1.4,
+          "id": "MIC-01",
+          "idMuestra": "M-001",
+          "nombre": "Bacillus subtilis",
+          "tipo": "Bacteria",
+          "estado": "Activo",
+          "condicionCrecimiento": {
+            "temperatura": 28.0,
+            "ph": 6.8,
+            "oxigeno": 75.0,
+            "humedad": 80.0,
+            "salinidad": 1.5,
+            "disponibilidadNutrientes": 85.0
+          },
+          "capacidadReproductiva": "Fisión binaria rápida",
+          "alimentacion": "Heterótrofa",
+          "locomocion": "Flagelos peritricos",
+          "respuestaCondiciones": "La bacteria mantiene actividad moderada.",
+          "cantidadOrganismos": 937,
+          "nivelActividad": 89.0,
+          "crecimiento": 10.0
+        },
+        {
+          "sensibilidadOxigenoHumedad": 1.1,
+          "id": "MIC-02",
+          "idMuestra": "M-001",
+          "nombre": "Paramecium caudatum",
+          "tipo": "Protozoo",
+          "estado": "Activo",
+          "condicionCrecimiento": {
+            "temperatura": 28.0,
+            "ph": 6.8,
+            "oxigeno": 75.0,
+            "humedad": 80.0,
+            "salinidad": 1.5,
+            "disponibilidadNutrientes": 85.0
+          },
+          "capacidadReproductiva": "Bipartición transversal",
+          "alimentacion": "Fagocitosis",
+          "locomocion": "Cilios vibrátiles",
+          "respuestaCondiciones": "Condiciones iniciales registradas.",
+          "cantidadOrganismos": 300,
+          "nivelActividad": 75.0,
+          "crecimiento": 0.0
+        },
+        {
+          "factorEsporulacion": 3,
+          "id": "MIC-03",
+          "idMuestra": "M-001",
+          "nombre": "Aspergillus niger",
+          "tipo": "Hongo Microscopico",
+          "estado": "Activo",
+          "condicionCrecimiento": {
+            "temperatura": 28.0,
+            "ph": 6.8,
+            "oxigeno": 75.0,
+            "humedad": 80.0,
+            "salinidad": 1.5,
+            "disponibilidadNutrientes": 85.0
+          },
+          "capacidadReproductiva": "Esporulación asexual",
+          "alimentacion": "Saprófita por absorción",
+          "locomocion": "Sésil (micelio)",
+          "respuestaCondiciones": "Condiciones iniciales registradas.",
+          "cantidadOrganismos": 400,
+          "nivelActividad": 75.0,
+          "crecimiento": 0.0
+        }
+      ],
+      "historialAnalisis": [
+        "Muestra registrada el 2026-10-20 por Dra. Elena Gómez",
+        "Microorganismo identificado: Bacillus subtilis (Bacteria)",
+        "Microorganismo identificado: Paramecium caudatum (Protozoo)",
+        "Microorganismo identificado: Aspergillus niger (Hongo Microscopico)",
+        "Observacion OBS-001 en Bacillus subtilis: Se observan colonias bacilares con alta movilidad y división celular activa.",
+        "Experimento EXP-001 iniciado sobre Bacillus subtilis",
+        "Exp EXP-001 - Ciclo 1: En desarrollo optimo",
+        "Exp EXP-001 - Ciclo 2: Activo"
+      ]
+    },
+    {
+      "id": "M-002",
+      "origen": "Manantial Termal Volcánico",
+      "fechaRecoleccion": "2026-10-20",
+      "responsableAnalisis": "Dr. Javier Pérez",
+      "condicionInicial": {
+        "temperatura": 72.0,
+        "ph": 6.5,
+        "oxigeno": 25.0,
+        "humedad": 90.0,
+        "salinidad": 8.0,
+        "disponibilidadNutrientes": 60.0
+      },
+      "observacionesGenerales": "Agua termal con alta temperatura y presencia de minerales.",
+      "microorganismos": [
+        {
+          "indiceResistenciaExtrema": 1.8,
+          "id": "MIC-04",
+          "idMuestra": "M-002",
+          "nombre": "Thermus aquaticus",
+          "tipo": "Extremofilo",
+          "estado": "En desarrollo optimo",
+          "condicionCrecimiento": {
+            "temperatura": 72.0,
+            "ph": 6.5,
+            "oxigeno": 25.0,
+            "humedad": 90.0,
+            "salinidad": 8.0,
+            "disponibilidadNutrientes": 60.0
+          },
+          "capacidadReproductiva": "Fisión binaria termófila",
+          "alimentacion": "Quimioorganótrofa",
+          "locomocion": "Inmóvil",
+          "respuestaCondiciones": "El extremofilo prospera en condiciones extremas desfavorables para otros organismos.",
+          "cantidadOrganismos": 978,
+          "nivelActividad": 90.0,
+          "crecimiento": 39.6
+        }
+      ],
+      "historialAnalisis": [
+        "Muestra registrada el 2026-10-20 por Dr. Javier Pérez",
+        "Microorganismo identificado: Thermus aquaticus (Extremofilo)",
+        "Observacion OBS-002 en Thermus aquaticus: Estabilidad estructural de enzimas y membrana a más de 70 °C.",
+        "Experimento EXP-002 iniciado sobre Thermus aquaticus",
+        "Exp EXP-002 - Ciclo 1: En desarrollo optimo"
+      ]
+    }
+  ],
+  "observaciones": [
+    {
+      "id": "OBS-001",
+      "idMuestra": "M-001",
+      "idMicroorganismo": "MIC-01",
+      "fecha": "2026-10-20",
+      "condicionAnalisis": {
+        "temperatura": 28.0,
+        "ph": 6.8,
+        "oxigeno": 75.0,
+        "humedad": 80.0,
+        "salinidad": 1.5,
+        "disponibilidadNutrientes": 85.0
+      },
+      "descripcionResultados": "Se observan colonias bacilares con alta movilidad y división celular activa."
+    },
+    {
+      "id": "OBS-002",
+      "idMuestra": "M-002",
+      "idMicroorganismo": "MIC-04",
+      "fecha": "2026-10-20",
+      "condicionAnalisis": {
+        "temperatura": 72.0,
+        "ph": 6.5,
+        "oxigeno": 25.0,
+        "humedad": 90.0,
+        "salinidad": 8.0,
+        "disponibilidadNutrientes": 60.0
+      },
+      "descripcionResultados": "Estabilidad estructural de enzimas y membrana a más de 70 °C."
+    }
+  ],
+  "experimentos": [
+    {
+      "id": "EXP-001",
+      "fecha": "2026-10-20",
+      "idMuestra": "M-001",
+      "idMicroorganismo": "MIC-01",
+      "nombreMicroorganismo": "Bacillus subtilis",
+      "tipoMicroorganismo": "Bacteria",
+      "condicionInicial": {
+        "temperatura": 28.0,
+        "ph": 6.8,
+        "oxigeno": 75.0,
+        "humedad": 80.0,
+        "salinidad": 1.5,
+        "disponibilidadNutrientes": 85.0
+      },
+      "condicionActual": {
+        "temperatura": 48.0,
+        "ph": 5.2,
+        "oxigeno": 40.0,
+        "humedad": 50.0,
+        "salinidad": 4.0,
+        "disponibilidadNutrientes": 45.0
+      },
+      "poblacionInicial": 500,
+      "actividadInicial": 75.0,
+      "ciclos": [
+        {
+          "numeroCiclo": 1,
+          "condicionAplicada": {
+            "temperatura": 35.0,
+            "ph": 7.0,
+            "oxigeno": 80.0,
+            "humedad": 75.0,
+            "salinidad": 1.0,
+            "disponibilidadNutrientes": 90.0
+          },
+          "cantidadOrganismos": 815,
+          "nivelActividad": 87.0,
+          "crecimiento": 35.0,
+          "reproduccion": 315,
+          "estadoGeneral": "En desarrollo optimo",
+          "descripcionRespuesta": "La bacteria prospera y acelera su fision binaria."
+        },
+        {
+          "numeroCiclo": 2,
+          "condicionAplicada": {
+            "temperatura": 48.0,
+            "ph": 5.2,
+            "oxigeno": 40.0,
+            "humedad": 50.0,
+            "salinidad": 4.0,
+            "disponibilidadNutrientes": 45.0
+          },
+          "cantidadOrganismos": 937,
+          "nivelActividad": 89.0,
+          "crecimiento": 10.0,
+          "reproduccion": 122,
+          "estadoGeneral": "Activo",
+          "descripcionRespuesta": "La bacteria mantiene actividad moderada."
+        }
+      ]
+    },
+    {
+      "id": "EXP-002",
+      "fecha": "2026-10-20",
+      "idMuestra": "M-002",
+      "idMicroorganismo": "MIC-04",
+      "nombreMicroorganismo": "Thermus aquaticus",
+      "tipoMicroorganismo": "Extremofilo",
+      "condicionInicial": {
+        "temperatura": 72.0,
+        "ph": 6.5,
+        "oxigeno": 25.0,
+        "humedad": 90.0,
+        "salinidad": 8.0,
+        "disponibilidadNutrientes": 60.0
+      },
+      "condicionActual": {
+        "temperatura": 82.0,
+        "ph": 6.2,
+        "oxigeno": 15.0,
+        "humedad": 85.0,
+        "salinidad": 12.0,
+        "disponibilidadNutrientes": 70.0
+      },
+      "poblacionInicial": 600,
+      "actividadInicial": 75.0,
+      "ciclos": [
+        {
+          "numeroCiclo": 1,
+          "condicionAplicada": {
+            "temperatura": 82.0,
+            "ph": 6.2,
+            "oxigeno": 15.0,
+            "humedad": 85.0,
+            "salinidad": 12.0,
+            "disponibilidadNutrientes": 70.0
+          },
+          "cantidadOrganismos": 978,
+          "nivelActividad": 90.0,
+          "crecimiento": 39.6,
+          "reproduccion": 378,
+          "estadoGeneral": "En desarrollo optimo",
+          "descripcionRespuesta": "El extremofilo prospera en condiciones extremas desfavorables para otros organismos."
+        }
+      ]
+    }
+  ],
+  "historialGeneral": [
+    "[MUESTRA] Registrada ID: M-001 (Suelo Húmedo Amazónico)",
+    "[MUESTRA] Registrada ID: M-002 (Manantial Termal Volcánico)",
+    "[MICROORGANISMO] Bacillus subtilis (Bacteria) en Muestra M-001",
+    "[MICROORGANISMO] Paramecium caudatum (Protozoo) en Muestra M-001",
+    "[MICROORGANISMO] Aspergillus niger (Hongo Microscopico) en Muestra M-001",
+    "[MICROORGANISMO] Thermus aquaticus (Extremofilo) en Muestra M-002",
+    "[OBSERVACION] ID: OBS-001 | Microorganismo: Bacillus subtilis",
+    "[OBSERVACION] ID: OBS-002 | Microorganismo: Thermus aquaticus",
+    "[EXPERIMENTO] Iniciado ID: EXP-001 sobre Bacillus subtilis",
+    "[SIMULACION] Exp EXP-001 Ciclo 1 -\u003e Pob: 815",
+    "[SIMULACION] Exp EXP-001 Ciclo 2 -\u003e Pob: 937",
+    "[EXPERIMENTO] Iniciado ID: EXP-002 sobre Thermus aquaticus",
+    "[SIMULACION] Exp EXP-002 Ciclo 1 -\u003e Pob: 978"
+  ]
+}

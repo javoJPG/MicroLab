@@ -1,20 +1,316 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
 package Frontend;
 
+import Backend.CicloSimulacion;
+import Backend.CondicionAmbiental;
+import Backend.Experimento;
+import Backend.Microorganismo;
+import Backend.Muestra;
+import Backend.exceptions.DatosInvalidosException;
+import Backend.exceptions.LaboratorioException;
+import Controller.ExperimentoController;
+import Controller.MuestraController;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
+ * Panel encargado de la creacion de experimentos de simulacion y de la ejecucion
+ * ciclo a ciclo del comportamiento de los microorganismos ante cambios ambientales.
  *
  * @author javo
  */
 public class PanelExperimentoSimulacion extends javax.swing.JPanel {
 
+    // Controladores de negocio compartidos
+    private MuestraController muestraCtrl;
+    private ExperimentoController experimentoCtrl;
+
+    // Modelo de datos para la tabla de ciclos de simulacion
+    private DefaultTableModel modeloTablaCiclos;
+
     /**
-     * Creates new form PanelExperimentoSimulacion
+     * Constructor por defecto requerido por el diseñador de NetBeans.
      */
     public PanelExperimentoSimulacion() {
+        this(null, null);
+    }
+
+    /**
+     * Constructor que conecta el panel con los controladores de muestras y experimentos.
+     *
+     * @param muestraCtrl     Instancia de MuestraController.
+     * @param experimentoCtrl Instancia de ExperimentoController.
+     */
+    public PanelExperimentoSimulacion(MuestraController muestraCtrl, ExperimentoController experimentoCtrl) {
+        this.muestraCtrl = muestraCtrl;
+        this.experimentoCtrl = experimentoCtrl;
         initComponents();
+        configurarTablaYEventos();
+        refrescarDatos();
+    }
+
+    // ==================== CONFIGURACION Y EVENTOS ====================
+
+    /**
+     * Configura las columnas de la tabla de ciclos y enlaza los selectores y botones.
+     */
+    private void configurarTablaYEventos() {
+        modeloTablaCiclos = new DefaultTableModel(
+                new Object[]{
+                    "Ciclo #", "Población", "Actividad (%)", "Crecimiento (%)",
+                    "Reproducción", "Estado General", "Condición Aplicada", "Respuesta"
+                },
+                0
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tblCiclosSimulacion.setModel(modeloTablaCiclos);
+        txtComparacionResultados.setEditable(false);
+
+        // Eventos de selectores desplegables
+        cmbMuestraExp.addActionListener(e -> actualizarComboMicroorganismos());
+        cmbExperimentoActivo.addActionListener(e -> cargarDetalleExperimentoActivo());
+
+        // Eventos de botones
+        btnRefrescarListasExp.addActionListener(e -> refrescarDatos());
+        btnIniciarExperimento.addActionListener(e -> iniciarNuevoExperimento());
+        btnEjecutarCiclo.addActionListener(e -> ejecutarCicloEnExperimentoActivo());
+    }
+
+    /**
+     * Recarga las listas de muestras, microorganismos y experimentos activos.
+     */
+    public final void refrescarDatos() {
+        if (muestraCtrl == null || modeloTablaCiclos == null) {
+            return;
+        }
+
+        // Actualizar selector de muestras
+        String muestraPrevia = (String) cmbMuestraExp.getSelectedItem();
+        cmbMuestraExp.removeAllItems();
+        for (Muestra m : muestraCtrl.getMuestras()) {
+            cmbMuestraExp.addItem(m.getId() + " - " + m.getOrigen());
+        }
+        if (muestraPrevia != null) {
+            cmbMuestraExp.setSelectedItem(muestraPrevia);
+        }
+
+        actualizarComboMicroorganismos();
+
+        // Actualizar selector de experimentos activos
+        String expPrevio = (String) cmbExperimentoActivo.getSelectedItem();
+        cmbExperimentoActivo.removeAllItems();
+        for (Experimento exp : muestraCtrl.getExperimentos()) {
+            cmbExperimentoActivo.addItem(
+                    exp.getId() + " - " + exp.getNombreMicroorganismo() + " (Muestra " + exp.getIdMuestra() + ")"
+            );
+        }
+        if (expPrevio != null) {
+            cmbExperimentoActivo.setSelectedItem(expPrevio);
+        }
+
+        cargarDetalleExperimentoActivo();
+    }
+
+    /**
+     * Actualiza el selector de microorganismos segun la muestra seleccionada.
+     */
+    private void actualizarComboMicroorganismos() {
+        if (muestraCtrl == null) {
+            return;
+        }
+
+        cmbMicroExp.removeAllItems();
+        String idMuestra = obtenerIdSeleccionado(cmbMuestraExp);
+        Muestra muestra = muestraCtrl.buscarMuestraPorId(idMuestra);
+
+        if (muestra != null) {
+            for (Microorganismo micro : muestra.getMicroorganismos()) {
+                cmbMicroExp.addItem(
+                        micro.getId() + " - " + micro.getNombre()
+                        + " (Pob: " + micro.getCantidadOrganismos() + ")"
+                );
+            }
+
+            // Prellenar condiciones ambientales iniciales si los campos estan vacios
+            if (muestra.getCondicionInicial() != null && txtTempExp.getText().trim().isEmpty()) {
+                mostrarCondicionEnCampos(muestra.getCondicionInicial());
+            }
+        }
+    }
+
+    /**
+     * Muestra en la tabla los ciclos ejecutados y en el area de texto la comparativa
+     * inicial vs final del experimento seleccionado.
+     */
+    private void cargarDetalleExperimentoActivo() {
+        if (experimentoCtrl == null || modeloTablaCiclos == null) {
+            return;
+        }
+
+        modeloTablaCiclos.setRowCount(0);
+        String idExp = obtenerIdSeleccionado(cmbExperimentoActivo);
+        Experimento exp = experimentoCtrl.buscarExperimentoPorId(idExp);
+
+        if (exp == null) {
+            txtComparacionResultados.setText("Seleccione o inicie un experimento para visualizar sus resultados.");
+            return;
+        }
+
+        for (CicloSimulacion ciclo : exp.getCiclos()) {
+            String condTexto = (ciclo.getCondicionAplicada() != null)
+                    ? ciclo.getCondicionAplicada().toString()
+                    : "-";
+
+            modeloTablaCiclos.addRow(new Object[]{
+                ciclo.getNumeroCiclo(),
+                ciclo.getCantidadOrganismos(),
+                String.format("%.1f%%", ciclo.getNivelActividad()),
+                String.format("%.1f%%", ciclo.getCrecimiento()),
+                ciclo.getReproduccion(),
+                ciclo.getEstadoGeneral(),
+                condTexto,
+                ciclo.getDescripcionRespuesta()
+            });
+        }
+
+        txtComparacionResultados.setText(exp.obtenerComparacionInicialFinal());
+
+        if (exp.getCondicionActual() != null) {
+            mostrarCondicionEnCampos(exp.getCondicionActual());
+        }
+    }
+
+    // ==================== LOGICA DE EXPERIMENTOS Y CICLOS ====================
+
+    /**
+     * Inicia un nuevo experimento con el microorganismo y condiciones iniciales indicadas.
+     */
+    private void iniciarNuevoExperimento() {
+        if (experimentoCtrl == null) {
+            return;
+        }
+
+        try {
+            String idExp = txtIdExperimento.getText().trim();
+            String fecha = txtFechaExperimento.getText().trim();
+            String idMuestra = obtenerIdSeleccionado(cmbMuestraExp);
+            String idMicro = obtenerIdSeleccionado(cmbMicroExp);
+            CondicionAmbiental condicionInicial = leerCondicionAmbiental();
+
+            Experimento nuevo = experimentoCtrl.iniciarExperimento(
+                    idExp, fecha, idMuestra, idMicro, condicionInicial
+            );
+
+            refrescarDatos();
+
+            // Seleccionar automaticamente el experimento recien creado
+            String etiquetaExp = nuevo.getId() + " - " + nuevo.getNombreMicroorganismo()
+                    + " (Muestra " + nuevo.getIdMuestra() + ")";
+            cmbExperimentoActivo.setSelectedItem(etiquetaExp);
+
+            txtIdExperimento.setText("");
+            txtFechaExperimento.setText("");
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Experimento '" + nuevo.getId() + "' iniciado correctamente.",
+                    "Experimento iniciado",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+        } catch (DatosInvalidosException | LaboratorioException ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    ex.getMessage(),
+                    "No se pudo iniciar el experimento",
+                    JOptionPane.WARNING_MESSAGE
+            );
+        }
+    }
+
+    /**
+     * Ejecuta un ciclo de simulacion sobre el experimento activo aplicando las variables
+     * ambientales ingresadas en los campos de texto.
+     */
+    private void ejecutarCicloEnExperimentoActivo() {
+        if (experimentoCtrl == null) {
+            return;
+        }
+
+        try {
+            String idExp = obtenerIdSeleccionado(cmbExperimentoActivo);
+            CondicionAmbiental nuevaCondicion = leerCondicionAmbiental();
+
+            CicloSimulacion ciclo = experimentoCtrl.ejecutarCicloExperimento(idExp, nuevaCondicion);
+
+            actualizarComboMicroorganismos();
+            cargarDetalleExperimentoActivo();
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Ciclo #" + ciclo.getNumeroCiclo() + " ejecutado.\n"
+                    + "Estado: " + ciclo.getEstadoGeneral() + " | Población: " + ciclo.getCantidadOrganismos(),
+                    "Ciclo completado",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+        } catch (DatosInvalidosException | LaboratorioException ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    ex.getMessage(),
+                    "Error en ciclo de simulación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+        }
+    }
+
+    /**
+     * Lee y convierte las variables ambientales ingresadas en el panel.
+     */
+    private CondicionAmbiental leerCondicionAmbiental() throws DatosInvalidosException {
+        try {
+            double temp = Double.parseDouble(txtTempExp.getText().trim());
+            double ph = Double.parseDouble(txtPhExp.getText().trim());
+            double oxigeno = Double.parseDouble(txtOxigenoExp.getText().trim());
+            double humedad = Double.parseDouble(txtHumedadExp.getText().trim());
+            double salinidad = Double.parseDouble(txtSalinidadExp.getText().trim());
+            double nutrientes = Double.parseDouble(txtNutrientesExp.getText().trim());
+
+            return new CondicionAmbiental(temp, ph, oxigeno, humedad, salinidad, nutrientes);
+
+        } catch (NumberFormatException ex) {
+            throw new DatosInvalidosException(
+                    "Todas las variables ambientales deben ser valores numéricos válidos."
+            );
+        }
+    }
+
+    /**
+     * Vuelca los valores de una CondicionAmbiental en los campos de texto del panel.
+     */
+    private void mostrarCondicionEnCampos(CondicionAmbiental c) {
+        txtTempExp.setText(String.valueOf(c.getTemperatura()));
+        txtPhExp.setText(String.valueOf(c.getPh()));
+        txtOxigenoExp.setText(String.valueOf(c.getOxigeno()));
+        txtHumedadExp.setText(String.valueOf(c.getHumedad()));
+        txtSalinidadExp.setText(String.valueOf(c.getSalinidad()));
+        txtNutrientesExp.setText(String.valueOf(c.getDisponibilidadNutrientes()));
+    }
+
+    /**
+     * Extrae el identificador antes del guion ("ID - Descripcion") de un JComboBox.
+     */
+    private String obtenerIdSeleccionado(javax.swing.JComboBox<String> combo) {
+        Object item = combo.getSelectedItem();
+        if (item == null) {
+            return "";
+        }
+        String texto = item.toString().trim();
+        int idx = texto.indexOf(" - ");
+        return (idx > 0) ? texto.substring(0, idx).trim() : texto;
     }
 
     /**
