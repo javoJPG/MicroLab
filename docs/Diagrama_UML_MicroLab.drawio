@@ -1,0 +1,97 @@
+<mxfile host="app.diagrams.net" agent="MicroLab">
+  <diagram id="uml-microlab" name="Diagrama de Clases - MicroLab">
+    <mxGraphModel dx="2896" dy="2983" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="cls_isimulable" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=8;spacingRight=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&amp;lt;&amp;lt;interface&amp;gt;&amp;gt;&lt;br&gt;&lt;b&gt;ISimulable&lt;/b&gt;&lt;hr&gt;+ ejecutarCiclo(numeroCiclo: int, condicion: CondicionAmbiental): CicloSimulacion&lt;br&gt;+ evaluarAfinidadAmbiental(condicion: CondicionAmbiental): double" vertex="1">
+          <mxGeometry height="110" width="460" x="670" y="-20" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_microorganismo" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=8;spacingRight=8;fillColor=#fff2cc;strokeColor=#d6b656;" value="&amp;lt;&amp;lt;abstract&amp;gt;&amp;gt;&lt;br&gt;&lt;b&gt;Microorganismo&lt;/b&gt;&lt;hr&gt;# id: String&lt;br&gt;# idMuestra: String&lt;br&gt;# nombre: String&lt;br&gt;# tipo: String&lt;br&gt;# estado: String&lt;br&gt;# condicionCrecimiento: CondicionAmbiental&lt;br&gt;# capacidadReproductiva: String&lt;br&gt;# alimentacion: String&lt;br&gt;# locomocion: String&lt;br&gt;# cantidadOrganismos: int&lt;br&gt;# nivelActividad: double&lt;br&gt;# crecimiento: double&lt;hr&gt;+ evaluarAfinidadAmbiental(actual: CondicionAmbiental): double&lt;br&gt;+ {abstract} ejecutarCiclo(numeroCiclo: int, condicion: CondicionAmbiental): CicloSimulacion" vertex="1">
+          <mxGeometry height="270" width="480" x="670" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_bacteria" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=8;spacingRight=8;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;b&gt;Bacteria&lt;/b&gt;&lt;hr&gt;- tasaFisionBinaria: double&lt;hr&gt;+ ejecutarCiclo(numeroCiclo: int, condicion: CondicionAmbiental): CicloSimulacion&lt;br&gt;+ getTasaFisionBinaria(): double" vertex="1">
+          <mxGeometry height="120" width="270" x="230" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_protozoo" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=8;spacingRight=8;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;b&gt;Protozoo&lt;/b&gt;&lt;hr&gt;- sensibilidadOxigenoHumedad: double&lt;hr&gt;+ ejecutarCiclo(numeroCiclo: int, condicion: CondicionAmbiental): CicloSimulacion&lt;br&gt;+ getSensibilidadOxigenoHumedad(): double" vertex="1">
+          <mxGeometry height="120" width="280" x="550" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_hongo" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=8;spacingRight=8;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;b&gt;HongoMicroscopico&lt;/b&gt;&lt;hr&gt;- factorEsporulacion: int&lt;hr&gt;+ ejecutarCiclo(numeroCiclo: int, condicion: CondicionAmbiental): CicloSimulacion&lt;br&gt;+ getFactorEsporulacion(): int" vertex="1">
+          <mxGeometry height="120" width="270" x="860" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_extremofilo" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=8;spacingRight=8;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;b&gt;Extremofilo&lt;/b&gt;&lt;hr&gt;- indiceResistenciaExtrema: double&lt;hr&gt;+ ejecutarCiclo(numeroCiclo: int, condicion: CondicionAmbiental): CicloSimulacion&lt;br&gt;+ getIndiceResistenciaExtrema(): double" vertex="1">
+          <mxGeometry height="120" width="280" x="1145" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_muestra" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=8;spacingRight=8;fillColor=#f5f5f5;strokeColor=#666666;" value="&lt;b&gt;Muestra&lt;/b&gt;&lt;hr&gt;- id: String&lt;br&gt;- origen: String&lt;br&gt;- fechaRecoleccion: String&lt;br&gt;- responsableAnalisis: String&lt;br&gt;- condicionInicial: CondicionAmbiental&lt;br&gt;- observacionesGenerales: String&lt;br&gt;- microorganismos: List&amp;lt;Microorganismo&amp;gt;&lt;br&gt;- historialAnalisis: List&amp;lt;String&amp;gt;&lt;hr&gt;+ agregarMicroorganismo(m: Microorganismo): void&lt;br&gt;+ buscarMicroorganismoPorId(id: String): Microorganismo&lt;br&gt;+ registrarEventoHistorial(evento: String): void" vertex="1">
+          <mxGeometry height="230" width="350" x="60" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_condicion" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=8;spacingRight=8;fillColor=#f5f5f5;strokeColor=#666666;" value="&lt;b&gt;CondicionAmbiental&lt;/b&gt;&lt;hr&gt;- temperatura: double&lt;br&gt;- ph: double&lt;br&gt;- oxigeno: double&lt;br&gt;- humedad: double&lt;br&gt;- salinidad: double&lt;br&gt;- disponibilidadNutrientes: double&lt;hr&gt;+ copiar(): CondicionAmbiental&lt;br&gt;+ toString(): String" vertex="1">
+          <mxGeometry height="165" width="280" x="70" y="-90" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_observacion" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=8;spacingRight=8;fillColor=#f5f5f5;strokeColor=#666666;" value="&lt;b&gt;Observacion&lt;/b&gt;&lt;hr&gt;- id: String&lt;br&gt;- idMuestra: String&lt;br&gt;- idMicroorganismo: String&lt;br&gt;- fecha: String&lt;br&gt;- condicionAnalisis: CondicionAmbiental&lt;br&gt;- descripcionResultados: String&lt;hr&gt;+ getId(): String&lt;br&gt;+ getCondicionAnalisis(): CondicionAmbiental" vertex="1">
+          <mxGeometry height="180" width="320" x="1280" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_experimento" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=8;spacingRight=8;fillColor=#f5f5f5;strokeColor=#666666;" value="&lt;b&gt;Experimento&lt;/b&gt;&lt;hr&gt;- id: String&lt;br&gt;- fecha: String&lt;br&gt;- idMuestra: String&lt;br&gt;- idMicroorganismo: String&lt;br&gt;- nombreMicroorganismo: String&lt;br&gt;- condicionInicial: CondicionAmbiental&lt;br&gt;- condicionActual: CondicionAmbiental&lt;br&gt;- poblacionInicial: int&lt;br&gt;- actividadInicial: double&lt;br&gt;- ciclos: List&amp;lt;CicloSimulacion&amp;gt;&lt;hr&gt;+ ejecutarNuevoCiclo(cond: CondicionAmbiental, m: Microorganismo): CicloSimulacion&lt;br&gt;+ obtenerComparacionInicialFinal(): String" vertex="1">
+          <mxGeometry height="240" width="460" x="1280" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_ciclo" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=8;spacingRight=8;fillColor=#f5f5f5;strokeColor=#666666;" value="&lt;b&gt;CicloSimulacion&lt;/b&gt;&lt;hr&gt;- numeroCiclo: int&lt;br&gt;- condicionAplicada: CondicionAmbiental&lt;br&gt;- cantidadOrganismos: int&lt;br&gt;- nivelActividad: double&lt;br&gt;- crecimiento: double&lt;br&gt;- reproduccion: int&lt;br&gt;- estadoGeneral: String&lt;br&gt;- descripcionRespuesta: String&lt;hr&gt;+ getNumeroCiclo(): int&lt;br&gt;+ getEstadoGeneral(): String" vertex="1">
+          <mxGeometry height="210" width="290" x="1480" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_persistencia" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=8;spacingRight=8;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;b&gt;GestorPersistenciaJson&lt;/b&gt;&lt;hr&gt;- rutaArchivo: String&lt;br&gt;- gson: Gson&lt;hr&gt;+ guardarDatos(muestras, observaciones, experimentos, historial): void&lt;br&gt;+ cargarDatos(): ContenedorDatos" vertex="1">
+          <mxGeometry height="145" width="410" x="60" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_excepciones" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=8;spacingRight=8;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;b&gt;DatosInvalidosException / LaboratorioException&lt;/b&gt;&lt;hr&gt;Extienden de Exception&lt;br&gt;+ DatosInvalidosException(mensaje: String)&lt;br&gt;+ LaboratorioException(mensaje: String)" vertex="1">
+          <mxGeometry height="90" width="350" x="40" y="920" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_muestra_ctrl" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=8;spacingRight=8;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;b&gt;MuestraController&lt;/b&gt;&lt;hr&gt;- muestras: List&amp;lt;Muestra&amp;gt;&lt;br&gt;- observaciones: List&amp;lt;Observacion&amp;gt;&lt;br&gt;- experimentos: List&amp;lt;Experimento&amp;gt;&lt;br&gt;- historialGeneral: List&amp;lt;String&amp;gt;&lt;br&gt;- gestorPersistencia: GestorPersistenciaJson&lt;hr&gt;+ registrarMuestra(m: Muestra): void&lt;br&gt;+ actualizarMuestra(...): void&lt;br&gt;+ registrarMicroorganismoEnMuestra(idMuestra: String, micro: Microorganismo): void&lt;br&gt;+ validarCondicionAmbiental(c: CondicionAmbiental): void&lt;br&gt;+ guardarDatos(): void / + cargarDatos(): void" vertex="1">
+          <mxGeometry height="210" width="460" x="540" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_exp_ctrl" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=8;spacingRight=8;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;b&gt;ExperimentoController&lt;/b&gt;&lt;hr&gt;- muestraCtrl: MuestraController&lt;hr&gt;+ registrarObservacion(obs: Observacion): void&lt;br&gt;+ obtenerObservacionesPorMicroorganismo(idMuestra, idMicro): List&amp;lt;Observacion&amp;gt;&lt;br&gt;+ iniciarExperimento(...): Experimento&lt;br&gt;+ ejecutarCicloExperimento(idExp: String, cond: CondicionAmbiental): CicloSimulacion" vertex="1">
+          <mxGeometry height="170" width="450" x="1050" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_consulta_ctrl" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=8;spacingRight=8;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;b&gt;ConsultaController&lt;/b&gt;&lt;hr&gt;- muestraCtrl: MuestraController&lt;hr&gt;+ filtrarMuestras(criterio: String, valor: String): List&amp;lt;Muestra&amp;gt;&lt;br&gt;+ filtrarMicroorganismos(criterio: String, valor: String): List&amp;lt;Microorganismo&amp;gt;&lt;br&gt;+ obtenerReporteHistorialMuestra(idMuestra: String): String" vertex="1">
+          <mxGeometry height="130" width="450" x="1050" y="970" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_frontend" parent="1" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=8;spacingRight=8;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;VentanaPrincipal (Frontend Swing)&lt;/b&gt;&lt;hr&gt;- panelMuestras: PanelMuestras&lt;br&gt;- panelMicroorganismos: PanelMicroorganismos&lt;br&gt;- panelObservaciones: PanelObservaciones&lt;br&gt;- panelExperimento: PanelExperimentoSimulacion&lt;br&gt;- panelConsultas: PanelConsultasHistorial&lt;hr&gt;+ configurarPestanas(): void" vertex="1">
+          <mxGeometry height="160" width="380" x="580" y="1100" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_impl" edge="1" parent="1" source="cls_microorganismo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=0;dashed=1;endSize=12;" target="cls_isimulable">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_inh_bac" edge="1" parent="1" source="cls_bacteria" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=0;endSize=12;" target="cls_microorganismo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_inh_pro" edge="1" parent="1" source="cls_protozoo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=0;endSize=12;" target="cls_microorganismo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_inh_hon" edge="1" parent="1" source="cls_hongo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=0;endSize=12;" target="cls_microorganismo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_inh_ext" edge="1" parent="1" source="cls_extremofilo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=0;endSize=12;" target="cls_microorganismo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_muestra_micro" edge="1" parent="1" source="cls_muestra" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamondThin;startFill=1;endArrow=open;endFill=0;startSize=12;" target="cls_microorganismo" value="1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_muestra_cond" edge="1" parent="1" source="cls_muestra" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamondThin;startFill=1;endArrow=open;endFill=0;startSize=12;" target="cls_condicion">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_exp_ciclo" edge="1" parent="1" source="cls_experimento" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamondThin;startFill=1;endArrow=open;endFill=0;startSize=12;" target="cls_ciclo" value="1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_ctrl_pers" edge="1" parent="1" source="cls_muestra_ctrl" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;" target="cls_persistencia">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_exp_mctrl" edge="1" parent="1" source="cls_exp_ctrl" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;" target="cls_muestra_ctrl">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_cons_mctrl" edge="1" parent="1" source="cls_consulta_ctrl" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;" target="cls_muestra_ctrl">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_front_mctrl" edge="1" parent="1" source="cls_frontend" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;" target="cls_muestra_ctrl">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
